@@ -1,13 +1,21 @@
 #include <ESP32Servo.h>
-
+#include <Adafruit_GFX.h>
+#include <Adafruit_SSD1306.h>
 Servo servo1;
-int ServoPin = 34;
+int ServoPin = 18;
 int TrigPin = 33;
 int EchoPin = 32;
 int ButtonPin = 26;
 int BuzzerPin = 14;
+Adafruit_SSD1306 display(128,64, &Wire, -1);
 
 void setup() {
+  display.begin(SSD1306_SWITCHCAPVCC, 0x3C);
+  display.clearDisplay();
+  display.setTextSize(1);
+  display.setTextColor(WHITE);
+  display.setCursor(18,15);
+  
   servo1.attach(ServoPin);
   pinMode(TrigPin, OUTPUT);
   pinMode(EchoPin, INPUT);
@@ -19,6 +27,7 @@ void setup() {
 void loop() {
   // Start servo operation when the button is pressed
   if (digitalRead(ButtonPin) == HIGH) {
+
     while (true) {  // Keep running the loop
       // Measure distance using the ultrasonic sensorù
       noTone(BuzzerPin);
@@ -31,17 +40,20 @@ void loop() {
       long duration = pulseIn(EchoPin, HIGH);
       int distance = (duration * 0.034 / 2);
 
-      // Check if an object is detected within 40 cm
+      
       if (distance <= 40) {
-        Serial.print("Object Detected");
-        tone(BuzzerPin, 262, 250); // Sound the buzzer
+        display.println("OBJECT DETECTED");
+         display.display();
+        Serial.print("Object Detected\n");
+        tone(BuzzerPin, 262, 250);
         servo1.write(180);
         delay(1000) ;
       } else {
-        servo1.write(0); // Continue rotating servo (speed depends on servo type)
-      }
+        servo1.write(0); 
+        }
 
-      delay(15); // Small delay for stability
+      delay(15); 
+      
     }
   }
 }
