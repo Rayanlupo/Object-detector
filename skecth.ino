@@ -1,4 +1,3 @@
-
 #include <ESP32Servo.h>
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
@@ -27,7 +26,7 @@ void setup() {
   pinMode(TrigPin, OUTPUT);
   pinMode(EchoPin, INPUT);
   pinMode(BuzzerPin, OUTPUT);
-  pinMode(ResetPin, INPUT);
+
  
   Serial.begin(115200);
 }
@@ -41,35 +40,17 @@ void loop() {
       angle = angle - 5;
       servo1.write(angle);
       checkDistance();
-      if (distance < 40 && !objectDetected) {
-        objectDetected = true;
+       yValue = analogRead(JoystickPin);
+       if (distance <= 40) {
         object();
       } 
-      else if (distance >= 40 && objectDetected) {
+    else if (distance > 40 && objectDetected) {
         objectDetected = false;
         display.clearDisplay();
          clearDisplay();
+         servo1.write(angle);
       }
-       yValue = analogRead(JoystickPin);
-    }
-    else if (yValue > 2048) {
-      
-      Serial.println("right");
-      angle = angle + 5;
-      servo1.write(angle);
-      checkDistance();
-      if (distance < 40 && !objectDetected) {
-        objectDetected = true;
-        object();
-      } else if (distance >= 40 && objectDetected) {
-        objectDetected = false;
-        display.clearDisplay();
-         clearDisplay();
-      }
-    yValue = analogRead(JoystickPin);
-     
-    }
-    if (!objectDetected) {
+       if (!objectDetected) {
       if (yValue < 2048) {
         angle = angle - 5;
         servo1.write(angle);
@@ -78,7 +59,39 @@ void loop() {
         servo1.write(angle);
       }
     }
+    }
+    else if (yValue > 2048) {
+      
+      Serial.println("right");
+      angle = angle + 5;
+      servo1.write(angle);
+      checkDistance();
+    yValue = analogRead(JoystickPin);
+    if (distance <= 40) {
+        object();
+      } 
+    else if (distance > 40 && objectDetected) {
+        objectDetected = false;
+        display.clearDisplay();
+         clearDisplay();
+         servo1.write(angle);
+      }
+       if (!objectDetected) {
+      if (yValue < 2048) {
+        angle = angle - 5;
+        servo1.write(angle);
+      } else if (yValue > 2048) {
+        angle = angle + 5;
+        servo1.write(angle);
+      }
+     
+    }
+   
+    }
+      noTone(5);
+
 }
+
 
    
 void checkDistance(){
@@ -97,6 +110,7 @@ display.println("OBJECT DETECTED");
         display.display();
         Serial.print("Object Detected\n");
         tone(BuzzerPin, 262, 250);
+        objectDetected = true;
 }
 void clearDisplay() {
   display.clearDisplay();
