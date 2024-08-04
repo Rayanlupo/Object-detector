@@ -8,9 +8,9 @@ int TrigPin = 33;
 int EchoPin = 32;
 int JoystickPin = 12;
 int BuzzerPin = 14;
-int angle = 90;
+int angle;
 int distance;
-int yValue;
+int xValue;
 bool objectDetected = false;
 
 Adafruit_SSD1306 display(128, 64, &Wire, -1);
@@ -26,71 +26,32 @@ void setup() {
   pinMode(TrigPin, OUTPUT);
   pinMode(EchoPin, INPUT);
   pinMode(BuzzerPin, OUTPUT);
-
+  angle = 90;
  
   Serial.begin(115200);
 }
 
 void loop() {
-    
+ int xValue = analogRead(JoystickPin);
+ checkDistance(); 
+ if (distance < 40){
+  object();
+ }
+ if (xValue < 2048){
+  Serial.print("left");
+  angle = angle - 5;
+  servo1.write(angle);
+  delay(100);
+ }
+ else if (xValue > 2048){
 
-    int yValue = analogRead(JoystickPin);
-    if (yValue < 2048) {
-      Serial.println("left");
-      angle = angle - 5;
-      servo1.write(angle);
-      checkDistance();
-       yValue = analogRead(JoystickPin);
-       if (distance <= 40) {
-        object();
-      } 
-    else if (distance > 40 && objectDetected) {
-        objectDetected = false;
-        display.clearDisplay();
-         clearDisplay();
-         servo1.write(angle);
-      }
-       if (!objectDetected) {
-      if (yValue < 2048) {
-        angle = angle - 5;
-        servo1.write(angle);
-      } else if (yValue > 2048) {
-        angle = angle + 5;
-        servo1.write(angle);
-      }
-    }
-    }
-    else if (yValue > 2048) {
-      
-      Serial.println("right");
-      angle = angle + 5;
-      servo1.write(angle);
-      checkDistance();
-    yValue = analogRead(JoystickPin);
-    if (distance <= 40) {
-        object();
-      } 
-    else if (distance > 40 && objectDetected) {
-        objectDetected = false;
-        display.clearDisplay();
-         clearDisplay();
-         servo1.write(angle);
-      }
-       if (!objectDetected) {
-      if (yValue < 2048) {
-        angle = angle - 5;
-        servo1.write(angle);
-      } else if (yValue > 2048) {
-        angle = angle + 5;
-        servo1.write(angle);
-      }
-     
-    }
-   
-    }
-      noTone(5);
-
-}
+  Serial.print("right");
+  angle = angle + 5;
+  servo1.write(angle);
+  delay(100);
+ }
+ }
+ 
 
 
    
@@ -103,19 +64,35 @@ digitalWrite(TrigPin, LOW);
 
      int duration = pulseIn(EchoPin, HIGH);
       distance = (duration * 0.034 / 2);
+      Serial.print(distance);
+      delay(1000);
      
 }
 void object(){
-display.println("OBJECT DETECTED");
+  display.clearDisplay();
+  display.println(distance);
         display.display();
-        Serial.print("Object Detected\n");
+        Serial.print(distance);
         tone(BuzzerPin, 262, 250);
-        objectDetected = true;
-}
+        delay(100);
+  if (xValue < 2048){
+  Serial.print("left");
+  angle = angle - 5;
+  servo1.write(angle);
+  delay(1000);
+ }
+ else if (xValue > 2048){
+
+  Serial.print("right");
+  angle = angle + 5;
+  servo1.write(angle);
+ }
+ }
+ 
+
 void clearDisplay() {
   display.clearDisplay();
   display.display();
   Serial.print("Object Removed\n");
   noTone(BuzzerPin);
-  servo1.write(angle);
 }
